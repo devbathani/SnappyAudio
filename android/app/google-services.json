@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "729340279801",
+    "project_id": "snappyaudio-17ea5",
+    "storage_bucket": "snappyaudio-17ea5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729340279801:android:cea88b306f45b443d6db28",
+        "android_client_info": {
+          "package_name": "com.example.snappyaudio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "729340279801-19el2db2mfjubbo455qvoau6jv86sbf1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHcgUSdVQU37QQOTMzSMH-6qUctYw1dGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "729340279801-19el2db2mfjubbo455qvoau6jv86sbf1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
