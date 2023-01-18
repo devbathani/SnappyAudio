@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:snappyaudio/repository/home-screen-repo/google_lens_entity.dart';
@@ -10,10 +12,15 @@ import 'package:snappyaudio/repository/home-screen-repo/youtube_search_entity.da
 
 enum Screen1State { normal, loading, succeed }
 
+enum ImageDataState { normal, loading, succeed, error }
+
 class HomeScreenProvider extends ChangeNotifier {
   Screen1State screen1state = Screen1State.normal;
+  ImageDataState imageDataState = ImageDataState.normal;
   GoogleLensEntity? googleLensEntity;
   YouTubeSearchEntity? youTubeSearchEntity;
+  String errorMessage = '';
+  // String image
 
   File? image;
   final picker = ImagePicker();
@@ -63,35 +70,29 @@ class HomeScreenProvider extends ChangeNotifier {
 
       notifyListeners();
     });
-
-    // await HomeScreenRepo.getImageProcessedData(listEntity.first.imgUrl)
-    //     .then((value) {
-    //   if (value.statusCode == 200) {
-    //     log("Here");
-    //     googleLensEntity = googleLensEntityFromJson(value.body);
-    //     log(googleLensEntity!.knowledgeGraph!.first!.title!);
-    //   } else {
-    //     screen1state = Screen1State.loading;
-    //   }
-    // });
-    // await HomeScreenRepo.getYoutubeData(
-    //         googleLensEntity!.knowledgeGraph!.first!.title!)
-    //     .then((value) {
-    //   if (value.statusCode == 200) {
-    //     log("here 2");
-    //     youTubeSearchEntity = youTubeSearchEntityFromJson(value.body);
-    //     screen1state = Screen1State.succeed;
-    //   } else {
-    //     screen1state = Screen1State.loading;
-    //   }
-    // });
   }
 
   getImageProcessedData() async {
-    log("Image Url : ${listEntity.first.imgUrl}");
-    final response =
-        await HomeScreenRepo.getImageProcessedData(listEntity.first.imgUrl);
+    imageDataState = ImageDataState.loading;
+    notifyListeners();
+    final dynamicLinkParams = DynamicLinkParameters(
+      uriPrefix: "https://snappyaudio.page.link",
+      link: Uri.parse(listEntity.first.imgUrl),
+      androidParameters: const AndroidParameters(
+        packageName: "com.example.snappyaudio",
+        minimumVersion: 30,
+      ),
+    );
+    final shortImageUrl =
+        await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
+    final response = await HomeScreenRepo.getImageProcessedData(
+        shortImageUrl.shortUrl.toString());
+    if (jsonDecode(response.body)['error'] != null) {
+      errorMessage = jsonDecode(response.body)['error'];
+      notifyListeners();
+    }
     youTubeSearchEntity = youTubeSearchEntityFromJson(response.body);
+    imageDataState = ImageDataState.succeed;
     notifyListeners();
   }
 }

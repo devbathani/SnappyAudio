@@ -25,7 +25,7 @@ class HomeScreenRepo {
     ///This function will be uploadind the entered data of screen 1 on FB
     await firebaseFireStore
         .collection('Images')
-        .doc()
+        .doc('uploads')
         .set(listEntity.toJson())
         .whenComplete(
           () => log("Uploaded Successfull"),
@@ -44,6 +44,8 @@ class HomeScreenRepo {
   }
 
   static Future<http.Response> getImageProcessedData(String url) async {
+    log("Url : $url");
+
     final imageDataResponse = await http.get(
       Uri.parse(
           "https://serpapi.com/search.json?engine=google_lens&url=$url&api_key=038afa67f517d1f7902306a92cea860a7daeb86690492712e37e7b6cba1ad92d"),
