@@ -45,17 +45,29 @@ class HomeScreenRepo {
 
   static Future<http.Response> getImageProcessedData(String url) async {
     log("Url : $url");
-
-    final imageDataResponse = await http.get(
-      Uri.parse(
-          "https://serpapi.com/search.json?engine=google_lens&url=$url&api_key=038afa67f517d1f7902306a92cea860a7daeb86690492712e37e7b6cba1ad92d"),
+    String word = '';
+    final imageToTextResponse = await http.get(
+      Uri.parse("https://api.apilayer.com/image_to_text/url?url=$url"),
+      headers: {"apikey": "uToWG1hI8tJ0llW9aMAY8k7ofD1sQ708"},
     );
-    log("imageDataResponse : ${imageDataResponse.body}");
+    log("imageDataResponse : ${imageToTextResponse.body}");
+    word = jsonDecode(imageToTextResponse.body)["all_text"];
     final response = await http.get(
       Uri.parse(
-          "https://serpapi.com/search.json?engine=youtube&search_query=${jsonDecode(imageDataResponse.body)["knowledge_graph"][0]["title"]}&api_key=038afa67f517d1f7902306a92cea860a7daeb86690492712e37e7b6cba1ad92d"),
+          "https://serpapi.com/search.json?engine=youtube&search_query=$word&api_key=038afa67f517d1f7902306a92cea860a7daeb86690492712e37e7b6cba1ad92d"),
     );
 
     return response;
+  }
+
+  static Future<http.Response> getImageToText(String imageUrl) async {
+    log("Url : $imageUrl");
+
+    final imageToTextResponse = await http.get(
+      Uri.parse("https://api.apilayer.com/image_to_text/url?url=$imageUrl"),
+      headers: {"apikey": "uToWG1hI8tJ0llW9aMAY8k7ofD1sQ708"},
+    );
+    log("Image To Text Response : ${imageToTextResponse.body}");
+    return imageToTextResponse;
   }
 }

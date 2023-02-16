@@ -216,7 +216,7 @@ class ChannelResult {
   String? title;
   String? link;
   bool? verified;
-  int? subscribers;
+  dynamic subscribers;
   String? description;
   String? thumbnail;
 

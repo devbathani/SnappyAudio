@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -6,6 +5,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:snappyaudio/repository/home-screen-repo/google_lens_entity.dart';
+import 'package:snappyaudio/repository/home-screen-repo/image_to_text_entity.dart';
 import 'package:snappyaudio/repository/home-screen-repo/list_entity.dart';
 import 'package:snappyaudio/repository/home-screen-repo/home_screen_repo.dart';
 import 'package:snappyaudio/repository/home-screen-repo/youtube_search_entity.dart';
@@ -19,6 +19,7 @@ class HomeScreenProvider extends ChangeNotifier {
   ImageDataState imageDataState = ImageDataState.normal;
   GoogleLensEntity? googleLensEntity;
   YouTubeSearchEntity? youTubeSearchEntity;
+  ImageToTextEntity? imageToTextEntity;
   String errorMessage = '';
   // String image
 
@@ -48,6 +49,7 @@ class HomeScreenProvider extends ChangeNotifier {
     } else {
       log('No Image Selected');
     }
+    imageDataState = ImageDataState.normal;
     notifyListeners();
   }
 
@@ -64,10 +66,10 @@ class HomeScreenProvider extends ChangeNotifier {
 
   List<ListEntity> listEntity = [];
 
-  getFormData() async {
+  getFormData(BuildContext context) async {
     HomeScreenRepo.getFormData().listen((event) {
       listEntity = event;
-
+      imageDataState = ImageDataState.succeed;
       notifyListeners();
     });
   }
@@ -85,14 +87,42 @@ class HomeScreenProvider extends ChangeNotifier {
     );
     final shortImageUrl =
         await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
-    final response = await HomeScreenRepo.getImageProcessedData(
-        shortImageUrl.shortUrl.toString());
-    if (jsonDecode(response.body)['error'] != null) {
-      errorMessage = jsonDecode(response.body)['error'];
+
+    try {
+      final response = await HomeScreenRepo.getImageProcessedData(
+          shortImageUrl.shortUrl.toString());
+      youTubeSearchEntity = youTubeSearchEntityFromJson(response.body);
+      log("message");
+      imageDataState = ImageDataState.succeed;
+      notifyListeners();
+    } catch (e) {
+      imageDataState = ImageDataState.error;
       notifyListeners();
     }
-    youTubeSearchEntity = youTubeSearchEntityFromJson(response.body);
-    imageDataState = ImageDataState.succeed;
+  }
+
+  getImageToTextData() async {
+    imageDataState = ImageDataState.loading;
     notifyListeners();
+    final dynamicLinkParams = DynamicLinkParameters(
+      uriPrefix: "https://snappyaudio.page.link",
+      link: Uri.parse(listEntity.first.imgUrl),
+      androidParameters: const AndroidParameters(
+        packageName: "com.example.snappyaudio",
+        minimumVersion: 30,
+      ),
+    );
+    final shortImageUrl =
+        await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
+    try {
+      final response = await HomeScreenRepo.getImageToText(
+          shortImageUrl.shortUrl.toString());
+      imageToTextEntity = imageToTextEntityFromJson(response.body);
+      imageDataState = ImageDataState.succeed;
+      notifyListeners();
+    } catch (e) {
+      imageDataState = ImageDataState.error;
+      notifyListeners();
+    }
   }
 }
